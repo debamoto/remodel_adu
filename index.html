@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Studio layout planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#141312;--surface:#1c1a18;--raise:#262321;--line:#3a3633;--ink:#f2efe9;--sub:#a8a29a;--orange:#f0a457;--teal:#3fbdbd;--purple:#c98ab8;--red:#ff7a8f;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#faf8f4;--surface:#f1ede6;--raise:#e9e4da;--line:#d4ccc0;--ink:#1c1917;--sub:#5c554d;--orange:#c2661a;--teal:#0f5e5e;--purple:#7a3b6b;--red:#a3172e;color-scheme:light}}
+:root[data-theme="light"]{--bg:#faf8f4;--surface:#f1ede6;--raise:#e9e4da;--line:#d4ccc0;--ink:#1c1917;--sub:#5c554d;--orange:#c2661a;--teal:#0f5e5e;--purple:#7a3b6b;--red:#a3172e;color-scheme:light}
+:root[data-theme="dark"]{--bg:#141312;--surface:#1c1a18;--raise:#262321;--line:#3a3633;--ink:#f2efe9;--sub:#a8a29a;--orange:#f0a457;--teal:#3fbdbd;--purple:#c98ab8;--red:#ff7a8f;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5}
+header{max-width:1280px;margin:0 auto;padding:24px 24px 8px}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:2.5rem;line-height:1.05;margin:0 0 8px;letter-spacing:-.01em}
+header p{margin:0;color:var(--sub);max-width:64ch;font-size:.95rem}
+main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px;max-width:1280px;margin:0 auto;padding:12px 24px 40px;align-items:start}
+@media (max-width:860px){main{grid-template-columns:1fr;padding:12px 16px 40px}header{padding:20px 16px 8px}h1{font-size:2.1rem}}
+.plan{background:var(--surface);border-radius:16px;padding:12px}
+#svg{display:block;width:100%;max-height:84vh;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;outline:none}
+#svg:focus-visible{outline:2px solid var(--orange);outline-offset:4px;border-radius:8px}
+.plan .muted{padding:8px 4px 0}
+aside{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border-radius:12px;padding:14px 16px}
+h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:1.4rem;line-height:1.1;margin:0 0 10px}
+label{display:block;font-size:.8rem;color:var(--sub);margin:0 0 4px}
+input,select,button,textarea{font:inherit;font-size:.9rem;color:var(--ink);background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+input,select,textarea{width:100%}
+textarea{resize:vertical;font-size:.8rem;word-break:break-all}
+button{cursor:pointer}
+button:hover:not(:disabled){border-color:var(--sub)}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.row>*{flex:1;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:5px 10px;font-size:.82rem;border-radius:999px}
+.sub-h{font-size:.8rem;color:var(--sub);margin:12px 0 6px}
+.muted{color:var(--sub);font-size:.85rem;margin:0}
+.danger{color:var(--red)}
+.check{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--ink);margin:0 0 6px}
+.check input{width:auto;accent-color:var(--orange)}
+.legend{display:grid;grid-template-columns:22px 1fr;gap:6px 10px;align-items:center;font-size:.82rem;color:var(--sub)}
+.sw{height:11px;border-radius:3px;border:1.5px solid}
+.ln{height:4px;border-radius:2px}
+#status{margin-top:8px}
+#svg text{font-family:'DM Sans',system-ui,sans-serif;pointer-events:none}
+.floor{fill:var(--bg)}
+.wall{fill:none;stroke:var(--ink);stroke-width:.2}
+.house{fill:none;stroke:var(--sub);stroke-width:.06;stroke-dasharray:.3 .2}
+.zlbl{fill:var(--sub)}
+.lbl{fill:var(--ink)}
+.it{cursor:grab}
+.it .body{stroke-width:.07}
+.furn .body{fill:var(--teal);fill-opacity:.15;stroke:var(--teal)}
+.kitchen .body{fill:var(--orange);fill-opacity:.16;stroke:var(--orange)}
+.counter .body{fill:var(--sub);fill-opacity:.18;stroke:var(--sub)}
+.bath .body{fill:var(--purple);fill-opacity:.15;stroke:var(--purple)}
+.zone .body{fill:var(--sub);fill-opacity:.05;stroke:var(--ink);stroke-width:.1}
+.zone.shower .body{fill:var(--teal);fill-opacity:.06;stroke-dasharray:.25 .18;stroke-width:.07}
+.zone.dark .body{fill:var(--sub);fill-opacity:.2}
+.door .body{fill:var(--purple);stroke:none}
+.door.pocket .body{fill:none;stroke:var(--purple);stroke-width:.1;stroke-dasharray:.3 .15}
+.it.sel .body{stroke-width:.17}
+.it.bad .body{stroke:var(--red);stroke-width:.16;stroke-dasharray:none}
+.op{stroke-width:.28;stroke-linecap:butt}
+.op.window{stroke:var(--teal)}
+.op.french{stroke:var(--purple)}
+.op.door{stroke:var(--orange)}
+.op-gap{stroke:var(--bg);stroke-width:.34}
+.op.passage{stroke:var(--orange);stroke-width:.08;stroke-dasharray:.25 .15}
+.op.passage.sel{stroke-width:.16}
+.op.sel{stroke-width:.5}
+.hit{stroke:transparent;stroke-width:1.1;cursor:grab}
+.handle{fill:var(--ink);stroke:var(--bg);stroke-width:.06;cursor:nwse-resize}
+.dim{stroke:var(--teal);stroke-width:.05;stroke-dasharray:.15 .1}
+.dim.warn{stroke:var(--orange)}
+.dimt{fill:var(--teal);paint-order:stroke;stroke:var(--bg);stroke-width:.2}
+.dimt.warn{fill:var(--orange)}
+.compare{max-width:1280px;margin:0 auto;padding:0 24px 48px}
+@media (max-width:860px){.compare{padding:0 16px 48px}}
+.cmp-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cmp-card{margin:0;background:var(--surface);border-radius:12px;padding:12px 14px}
+.cmp-card h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:1.25rem;line-height:1.15;margin:0 0 8px}
+.cmp-card svg{display:block;width:100%;height:auto}
+.cmp-card svg text{font-family:'DM Sans',system-ui,sans-serif}
+.cmp-card .it{cursor:default}
+.cmp-card figcaption{margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Studio layout</h1>
+  <p>Drag pieces around the studio, entry, and powder room to test arrangements. Select a piece to resize, rotate, or delete it. Gaps under 3′ show in orange, the minimum for a comfortable walkway.</p>
+</header>
+<main>
+  <div class="plan">
+    <svg id="svg" viewBox="-4 -1.6 23 38.4" tabindex="0" role="application" aria-label="Studio floor plan. Drag pieces to move them; use arrow keys to nudge the selected piece."></svg>
+    <p class="muted">Scaled from the 7/20/2026 drawings at about 18′ × 26′ plus the powder room and darkroom. Confirm dimensions with Arielle before deciding.</p>
+  </div>
+  <aside>
+    <section class="card">
+      <h2>Selected</h2>
+      <div id="selBody"></div>
+    </section>
+    <section class="card">
+      <h2>Add pieces</h2>
+      <div class="chips" id="chips"></div>
+      <div class="sub-h">Openings</div>
+      <div class="chips" id="opChips"></div>
+    </section>
+    <section class="card">
+      <h2>Layouts</h2>
+      <label class="check"><input type="checkbox" id="tGaps" checked> Show gaps around the selected piece</label>
+      <label class="check"><input type="checkbox" id="tSnap" checked> Snap to 3″</label>
+      <div class="row">
+        <div><label for="lName">Name this layout</label><input id="lName" placeholder="Island by the north doors"></div>
+        <button id="bSave" style="flex:0 0 auto">Save</button>
+      </div>
+      <div class="row">
+        <div><label for="lList">Saved layouts</label><select id="lList"></select></div>
+        <button id="bLoad" style="flex:0 0 auto">Load</button>
+        <button id="bDelL" style="flex:0 0 auto" class="danger" aria-label="Delete saved layout">Delete</button>
+      </div>
+      <div class="row">
+        <button id="bUndo" disabled>Undo</button>
+        <button id="bReset">Reset to current plan</button>
+      </div>
+      <div class="row"><button id="bCmp">Compare saved layouts side by side</button></div>
+      <div class="sub-h">Share layouts with someone</div>
+      <label for="xfer">Export copies your saved layouts as text you can email. To bring in someone else's, paste their text here and tap Import.</label>
+      <textarea id="xfer" rows="3" spellcheck="false" placeholder="STUDIO1:…"></textarea>
+      <div class="row"><button id="bExp">Export layouts</button><button id="bImp">Import layouts</button></div>
+      <p class="muted" id="status"></p>
+    </section>
+    <section class="card">
+      <h2>Key</h2>
+      <div class="legend">
+        <span class="sw" style="border-color:var(--teal);background:color-mix(in srgb,var(--teal) 15%,transparent)"></span><span>Furniture and storage</span>
+        <span class="sw" style="border-color:var(--orange);background:color-mix(in srgb,var(--orange) 16%,transparent)"></span><span>Kitchen appliances</span>
+        <span class="sw" style="border-color:var(--sub);background:color-mix(in srgb,var(--sub) 18%,transparent)"></span><span>Counters (sinks and cooktops sit on these)</span>
+        <span class="sw" style="border-color:var(--purple);background:color-mix(in srgb,var(--purple) 15%,transparent)"></span><span>Bath fixtures</span>
+        <span class="sw" style="border-color:var(--ink)"></span><span>Rooms: entry, powder, shower, darkroom</span>
+        <span class="ln" style="background:var(--teal)"></span><span>Windows</span>
+        <span class="ln" style="background:var(--purple)"></span><span>French doors and interior doors</span>
+        <span class="ln" style="background:var(--orange)"></span><span>Exterior or house-side doors</span>
+        <span class="ln" style="height:2px;background:repeating-linear-gradient(90deg,var(--orange) 0 6px,transparent 6px 10px)"></span><span>Open pathway, no door</span>
+        <span class="sw" style="border-color:var(--red)"></span><span>Overlapping, or a sink or cooktop off its counter</span>
+      </div>
+      <p class="muted" style="margin-top:10px">Keys: arrows nudge, Shift+arrows move 1′, R rotates, Delete removes, Ctrl/⌘+Z undoes.</p>
+    </section>
+  </aside>
+</main>
+<section id="compare" class="compare" hidden>
+  <div class="cmp-head"><h2>Saved layouts side by side</h2><button id="bCloseCmp">Close</button></div>
+  <div id="cmpGrid" class="cmp-grid"></div>
+</section>
+<script>
+const W=18,H=32.5;
+const $=s=>document.querySelector(s);
+const svg=$('#svg');
+let state,sel=null,drag=null,undo=[],showGaps=true,snapOn=true;
+const KEY='studio-layout-current',SAVED='studio-layouts-saved';
+const uid=()=>'k'+Math.random().toString(36).slice(2,9);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const snap=v=>snapOn?Math.round(v*4)/4:Math.round(v*12)/12;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(ft){const t=Math.round(Math.abs(ft)*12),f=Math.floor(t/12),i=t%12;return f?(i?`${f}′ ${i}″`:`${f}′`):`${i}″`}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+
+const PRESETS=[
+ ['Island','furn','floor','',6,3.5],['Table for two','furn','floor','',4,2.5],['Desk','furn','floor','',5,2.5],
+ ['Chair','furn','floor','',2,2],['Easel','furn','floor','',3,3],['Flat file','furn','floor','',4,3.5],
+ ['Tall cabinet','furn','floor','',3,2],['Bookshelf','furn','floor','',3,1.25],['Daybed','furn','floor','',6.5,3.25],
+ ['Murphy bed, open','furn','floor','',5.25,7],['Counter','counter','floor','',4,2],['Fridge','kitchen','floor','',3,2.5],
+ ['Undercounter fridge','kitchen','top','',2,2],['Sink','kitchen','top','',2,1.75],['Cooktop','kitchen','top','',2,1.75],
+ ['Toilet','bath','floor','',1.5,2.5],['Vanity','bath','floor','',3,1.75],['Shower','zone','zone','shower',4,3],
+ ['Room','zone','zone','',6,6],['Door','door','door','',3,.35],['Pocket door','door','door','pocket',3,.35]
+];
+function mk(name,cat,layer,style,x,y,w,h){return{id:uid(),name,cat,layer,style,x,y,w,h}}
+function defaults(){
+ return{v:2,items:[
+  mk('Entry','zone','zone','',0,20,5,6),
+  mk('Powder room','zone','zone','',0,26,10.5,6.5),
+  mk('Shower','zone','zone','shower',6.25,26.25,4,6),
+  mk('Darkroom','zone','zone','dark',10.5,26,7.5,6.5),
+  mk('Desk','furn','floor','',.5,1.25,3,4),
+  mk('Island','furn','floor','',6,10,6,3.5),
+  mk('Closets','furn','floor','',16,12.75,2,6),
+  mk('Counter','counter','floor','',16,19.25,2,6.75),
+  mk('Counter','counter','floor','',8,24,3.5,2),
+  mk('Fridge','kitchen','floor','',5,23.25,3,2.75),
+  mk('Cooktop','kitchen','top','',16.125,19.75,1.75,2),
+  mk('Sink','kitchen','top','',16.125,22.5,1.75,2.25),
+  mk('Vanity','bath','floor','',.5,30.75,3,1.75),
+  mk('Toilet','bath','floor','',4,30,1.5,2.5),
+  mk('Pocket door','door','door','pocket',1,19.825,3.25,.35),
+  mk('Powder door','door','door','',.75,25.825,3.25,.35),
+  mk('Darkroom door','door','door','',11.75,25.825,3.25,.35)
+ ],openings:[
+  {name:'East windows',kind:'window',wall:'N',pos:.25,len:10.5},
+  {name:'East French doors',kind:'french',wall:'N',pos:11,len:4.25},
+  {name:'North window',kind:'window',wall:'W',pos:.75,len:5},
+  {name:'North French doors',kind:'french',wall:'W',pos:11.75,len:5},
+  {name:'Pathway to house hall',kind:'passage',wall:'W',pos:21.5,len:3.25},
+  {name:'Kitchenette window',kind:'window',wall:'E',pos:21.75,len:4}
+ ].map(o=>({id:uid(),...o}))};
+}
+const valid=s=>s&&Array.isArray(s.items)&&Array.isArray(s.openings);
+state=lsGet(KEY);if(!valid(state))state=defaults();
+function migrate(st){for(const o of st.openings||[])if(o.name==='Door to house hall'&&o.kind==='door'){o.kind='passage';o.name='Pathway to house hall'}if((st.v||1)<2){const m={'North windows':'East windows','North French doors':'East French doors','West window':'North window','West French doors':'North French doors'};for(const o of st.openings||[])if(m[o.name])o.name=m[o.name];st.v=2}return st}
+migrate(state);lsSet(KEY,state);
+{const sv=lsGet(SAVED);if(sv&&typeof sv==='object'){for(const k in sv)if(valid(sv[k]))migrate(sv[k]);lsSet(SAVED,sv)}}
+
+const getItem=id=>state.items.find(i=>i.id===id);
+const getOp=id=>state.openings.find(o=>o.id===id);
+const wallLen=o=>(o.wall==='N'||o.wall==='S')?W:H;
+function opXY(o){const a=o.pos,b=o.pos+o.len;return o.wall==='N'?[a,0,b,0]:o.wall==='S'?[a,H,b,H]:o.wall==='W'?[0,a,0,b]:[W,a,W,b]}
+const inter=(a,b)=>a.x<b.x+b.w-1e-6&&a.x+a.w>b.x+1e-6&&a.y<b.y+b.h-1e-6&&a.y+a.h>b.y+1e-6;
+const inside=(c,i)=>i.x>=c.x-1e-6&&i.x+i.w<=c.x+c.w+1e-6&&i.y>=c.y-1e-6&&i.y+i.h<=c.y+c.h+1e-6;
+
+function badSet(){
+ const bad=new Set(),fl=state.items.filter(i=>i.layer==='floor');
+ for(let i=0;i<fl.length;i++)for(let j=i+1;j<fl.length;j++)if(inter(fl[i],fl[j])){bad.add(fl[i].id);bad.add(fl[j].id)}
+ const counters=state.items.filter(i=>i.cat==='counter');
+ for(const t of state.items.filter(i=>i.layer==='top'))if(!counters.some(c=>inside(c,t)))bad.add(t.id);
+ return bad;
+}
+function fit(name,it){let fs=.5;const need=name.length*.55;if(need*fs>it.w-.25)fs=(it.w-.25)/need;fs=Math.min(fs,it.h-.15);return fs>=.3?fs:0}
+function itemSvg(it,isBad){
+ const isSel=sel&&sel.kind==='item'&&sel.id===it.id;
+ const cls=['it',it.cat,it.style,isBad?'bad':'',isSel?'sel':''].join(' ');
+ let lab='';
+ if(it.layer==='zone'){if(it.w>2.5&&it.h>1.3)lab=`<text x="${it.x+.3}" y="${it.y+.8}" font-size=".55" class="zlbl">${esc(it.name)}</text>`}
+ else if(it.layer!=='door'){const fs=fit(it.name,it);if(fs)lab=`<text x="${it.x+it.w/2}" y="${it.y+it.h/2}" font-size="${fs}" text-anchor="middle" dominant-baseline="central" class="lbl">${esc(it.name)}</text>`}
+ return `<g class="${cls}" data-id="${it.id}"><rect class="body" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${it.layer==='door'?0:.12}"/>${lab}</g>`;
+}
+function opSvg(o){const[x1,y1,x2,y2]=opXY(o),s=sel&&sel.kind==='op'&&sel.id===o.id?' sel':'';
+ const gap=o.kind==='passage'?`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="op-gap"/>`:'';
+ return `<g data-op="${o.id}">${gap}<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="op ${o.kind}${s}"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="hit"/></g>`}
+function gapsSvg(it){
+ const cx=it.x+it.w/2,cy=it.y+it.h/2,e=1e-6;
+ const containers=[{x:0,y:0,w:W,h:H}],obs=state.items.filter(o=>o!==it&&o.layer==='floor');
+ for(const z of state.items.filter(o=>o.layer==='zone')){if(cx>z.x&&cx<z.x+z.w&&cy>z.y&&cy<z.y+z.h)containers.push(z);else obs.push(z)}
+ const d={r:1/0,l:1/0,u:1/0,dn:1/0};
+ const oy=o=>o.y<it.y+it.h-e&&o.y+o.h>it.y+e,ox=o=>o.x<it.x+it.w-e&&o.x+o.w>it.x+e;
+ for(const o of obs){
+  if(oy(o)){if(o.x>=it.x+it.w-e)d.r=Math.min(d.r,o.x-(it.x+it.w));if(o.x+o.w<=it.x+e)d.l=Math.min(d.l,it.x-(o.x+o.w))}
+  if(ox(o)){if(o.y>=it.y+it.h-e)d.dn=Math.min(d.dn,o.y-(it.y+it.h));if(o.y+o.h<=it.y+e)d.u=Math.min(d.u,it.y-(o.y+o.h))}
+ }
+ for(const c of containers){d.r=Math.min(d.r,c.x+c.w-(it.x+it.w));d.l=Math.min(d.l,it.x-c.x);d.dn=Math.min(d.dn,c.y+c.h-(it.y+it.h));d.u=Math.min(d.u,it.y-c.y)}
+ let s='';
+ const seg=(x1,y1,x2,y2,tx,ty,anchor,v)=>{if(!(v>.05&&v<40))return;const w=v<3?' warn':'';s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="dim${w}"/><text x="${tx}" y="${ty}" font-size=".5" text-anchor="${anchor}" dominant-baseline="central" class="dimt${w}">${fmt(v)}</text>`};
+ seg(it.x+it.w,cy,it.x+it.w+d.r,cy,it.x+it.w+d.r/2,cy-.35,'middle',d.r);
+ seg(it.x,cy,it.x-d.l,cy,it.x-d.l/2,cy-.35,'middle',d.l);
+ seg(cx,it.y,cx,it.y-d.u,cx+.2,it.y-d.u/2,'start',d.u);
+ seg(cx,it.y+it.h,cx,it.y+it.h+d.dn,cx+.2,it.y+it.h+d.dn/2,'start',d.dn);
+ return s;
+}
+function buildInner(){
+ const order={zone:0,floor:1,top:2,door:3};
+ const sorted=[...state.items].sort((a,b)=>order[a.layer]-order[b.layer]);
+ const bad=badSet();
+ let s=`<rect x="-3.4" y="1" width="2.9" height="18" rx=".3" class="house"/><text x="-1.95" y="10" text-anchor="middle" dominant-baseline="central" font-size=".55" class="zlbl">Deck</text><rect x="0" y="33.8" width="18" height="2.6" rx=".3" class="house"/><text x="9" y="35.1" text-anchor="middle" dominant-baseline="central" font-size=".55" class="zlbl">House</text>`;
+ s+=`<text x="9" y="-.6" text-anchor="middle" font-size=".55" class="zlbl">East</text><text x="-1.95" y=".2" text-anchor="middle" font-size=".55" class="zlbl">North</text><text x="18.6" y="16.25" text-anchor="middle" dominant-baseline="central" font-size=".55" class="zlbl" transform="rotate(90 18.6 16.25)">South</text><text x="9" y="33.25" text-anchor="middle" dominant-baseline="central" font-size=".55" class="zlbl">West</text>`;
+ s+=`<rect x="0" y="0" width="${W}" height="${H}" class="floor"/>`;
+ for(const it of sorted)s+=itemSvg(it,bad.has(it.id));
+ s+=`<rect x="0" y="0" width="${W}" height="${H}" class="wall"/>`;
+ for(const o of state.openings)s+=opSvg(o);
+ if(sel&&sel.kind==='item'){const it=getItem(sel.id);if(it){if(showGaps&&it.layer==='floor')s+=gapsSvg(it);s+=`<rect data-handle="1" x="${it.x+it.w-.3}" y="${it.y+it.h-.3}" width=".6" height=".6" rx=".1" class="handle"/>`}}
+ return s;
+}
+function render(){svg.innerHTML=buildInner();const n=badSet().size;$('#status').textContent=n?`${n} piece${n>1?'s':''} overlap or sit off a counter. They're outlined in red.`:'No overlaps.'}
+function svgFor(st){const s0=state,sel0=sel;state=st;sel=null;const out=buildInner();const bad=badSet().size;state=s0;sel=sel0;return{out,bad}}
+function save(){lsSet(KEY,state)}
+function pushUndo(prev){undo.push(prev);if(undo.length>80)undo.shift();$('#bUndo').disabled=false}
+function change(fn){const prev=JSON.stringify(state);fn();pushUndo(prev);save();render();renderPanel()}
+function doUndo(){const p=undo.pop();if(!p)return;state=JSON.parse(p);if(sel&&!(getItem(sel.id)||getOp(sel.id)))sel=null;$('#bUndo').disabled=!undo.length;save();render();renderPanel()}
+function rotate(it){const cx=it.x+it.w/2,cy=it.y+it.h/2;[it.w,it.h]=[it.h,it.w];it.x=clamp(snap(cx-it.w/2),0,W-it.w);it.y=clamp(snap(cy-it.h/2),0,H-it.h)}
+
+function renderPanel(){
+ const b=$('#selBody');
+ if(!sel){b.innerHTML='<p class="muted">Tap a piece, room, or window on the plan to edit it.</p>';return}
+ if(sel.kind==='item'){
+  const it=getItem(sel.id);if(!it){sel=null;return renderPanel()}
+  b.innerHTML=`<label for="fName">Name</label><input id="fName" value="${esc(it.name)}">
+  <div class="row"><div><label for="fW">Width (in)</label><input id="fW" type="number" min="3" step="1" value="${Math.round(it.w*12)}"></div><div><label for="fH">Depth (in)</label><input id="fH" type="number" min="3" step="1" value="${Math.round(it.h*12)}"></div></div>
+  <p class="muted" style="margin-top:10px">${fmt(it.w)} × ${fmt(it.h)}, ${fmt(it.x)} from the north wall and ${fmt(it.y)} from the east wall.</p>
+  <div class="row"><button id="bRot">Rotate</button><button id="bDup">Duplicate</button><button id="bDel" class="danger">Delete</button></div>`;
+  $('#fName').onchange=e=>change(()=>{it.name=e.target.value.trim()||it.name});
+  $('#fW').onchange=e=>{const v=parseFloat(e.target.value);if(v>=3)change(()=>{it.w=Math.min(v/12,W);it.x=clamp(it.x,0,W-it.w)})};
+  $('#fH').onchange=e=>{const v=parseFloat(e.target.value);if(v>=3)change(()=>{it.h=Math.min(v/12,H);it.y=clamp(it.y,0,H-it.h)})};
+  $('#bRot').onclick=()=>change(()=>rotate(it));
+  $('#bDup').onclick=()=>change(()=>{const c={...it,id:uid(),x:clamp(it.x+1,0,W-it.w),y:clamp(it.y+1,0,H-it.h)};state.items.push(c);sel={kind:'item',id:c.id}});
+  $('#bDel').onclick=()=>change(()=>{state.items=state.items.filter(o=>o!==it);sel=null});
+ }else{
+  const o=getOp(sel.id);if(!o){sel=null;return renderPanel()}
+  const ref=(o.wall==='N'||o.wall==='S')?'north':'east';
+  b.innerHTML=`<label for="oName">Name</label><input id="oName" value="${esc(o.name)}">
+  <div class="row"><div><label for="oKind">Type</label><select id="oKind"><option value="window">Window</option><option value="french">French doors</option><option value="door">Exterior or house door</option><option value="passage">Pathway (open, no door)</option></select></div>
+  <div><label for="oWall">Wall</label><select id="oWall"><option value="N">Top (east)</option><option value="W">Left (north)</option><option value="E">Right (south)</option><option value="S">Bottom (west)</option></select></div></div>
+  <div class="row"><div><label for="oLen">Width (in)</label><input id="oLen" type="number" min="12" step="1" value="${Math.round(o.len*12)}"></div><button id="oDel" class="danger" style="flex:0 0 auto">Delete</button></div>
+  <p class="muted" style="margin-top:10px">${fmt(o.len)} wide, starting ${fmt(o.pos)} from the ${ref} corner. Drag it along the wall to move it.</p>`;
+  $('#oKind').value=o.kind;$('#oWall').value=o.wall;
+  $('#oName').onchange=e=>change(()=>{o.name=e.target.value.trim()||o.name});
+  $('#oKind').onchange=e=>change(()=>{o.kind=e.target.value});
+  $('#oWall').onchange=e=>change(()=>{o.wall=e.target.value;o.len=Math.min(o.len,wallLen(o));o.pos=clamp(o.pos,0,wallLen(o)-o.len)});
+  $('#oLen').onchange=e=>{const v=parseFloat(e.target.value);if(v>=12)change(()=>{o.len=Math.min(v/12,wallLen(o));o.pos=clamp(o.pos,0,wallLen(o)-o.len)})};
+  $('#oDel').onclick=()=>change(()=>{state.openings=state.openings.filter(x=>x!==o);sel=null});
+ }
+}
+
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+svg.addEventListener('pointerdown',e=>{
+ const p=pt(e),t=e.target,h=t.closest('[data-handle]'),op=t.closest('[data-op]'),g=t.closest('[data-id]');
+ const prev=JSON.stringify(state);
+ if(h&&sel&&sel.kind==='item'){drag={mode:'resize',it:getItem(sel.id),prev,moved:false}}
+ else if(op){const o=getOp(op.dataset.op);sel={kind:'op',id:o.id};const t0=(o.wall==='N'||o.wall==='S')?p.x:p.y;drag={mode:'op',o,off:t0-o.pos,prev,moved:false}}
+ else if(g){const it=getItem(g.dataset.id);sel={kind:'item',id:it.id};drag={mode:'move',it,dx:p.x-it.x,dy:p.y-it.y,prev,moved:false}}
+ else sel=null;
+ if(drag)svg.setPointerCapture(e.pointerId);
+ svg.focus({preventScroll:true});
+ render();renderPanel();e.preventDefault();
+});
+svg.addEventListener('pointermove',e=>{
+ if(!drag)return;const p=pt(e);
+ if(drag.mode==='move'){const it=drag.it;const x=clamp(snap(p.x-drag.dx),0,W-it.w),y=clamp(snap(p.y-drag.dy),0,H-it.h);if(x!==it.x||y!==it.y){it.x=x;it.y=y;drag.moved=true}}
+ else if(drag.mode==='resize'){const it=drag.it;const w=clamp(snap(p.x-it.x),.25,W-it.x),h=clamp(snap(p.y-it.y),.25,H-it.y);if(w!==it.w||h!==it.h){it.w=w;it.h=h;drag.moved=true}}
+ else{const o=drag.o;const t0=(o.wall==='N'||o.wall==='S')?p.x:p.y;const pos=clamp(snap(t0-drag.off),0,wallLen(o)-o.len);if(pos!==o.pos){o.pos=pos;drag.moved=true}}
+ if(drag.moved)render();
+});
+function endDrag(){if(!drag)return;if(drag.moved){pushUndo(drag.prev);save()}drag=null;render();renderPanel()}
+svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
+
+document.addEventListener('keydown',e=>{
+ const tag=document.activeElement&&document.activeElement.tagName;
+ if(['INPUT','SELECT','TEXTAREA'].includes(tag))return;
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();doUndo();return}
+ if(!sel)return;
+ const step=e.shiftKey?1:(snapOn?.25:1/12);
+ const dirs={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+ if(sel.kind==='item'){
+  const it=getItem(sel.id);if(!it)return;
+  if(dirs[e.key]){e.preventDefault();const[dx,dy]=dirs[e.key];change(()=>{it.x=clamp(it.x+dx*step,0,W-it.w);it.y=clamp(it.y+dy*step,0,H-it.h)})}
+  else if(e.key==='r'||e.key==='R'){change(()=>rotate(it))}
+  else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();change(()=>{state.items=state.items.filter(o=>o!==it);sel=null})}
+ }else{
+  const o=getOp(sel.id);if(!o||!dirs[e.key])return;e.preventDefault();
+  const[dx,dy]=dirs[e.key],v=(o.wall==='N'||o.wall==='S')?dx:dy;
+  change(()=>{o.pos=clamp(o.pos+v*step,0,wallLen(o)-o.len)});
+ }
+});
+
+const chips=$('#chips');
+for(const[n,cat,layer,style,w,h]of PRESETS){const b=document.createElement('button');b.textContent=n;b.onclick=()=>change(()=>{const it=mk(n,cat,layer,style,snap(9-w/2),snap(13-h/2),w,h);state.items.push(it);sel={kind:'item',id:it.id}});chips.appendChild(b)}
+for(const[n,kind]of[['Window','window'],['French doors','french'],['Exterior door','door'],['Pathway','passage']]){const b=document.createElement('button');b.textContent=n;b.onclick=()=>change(()=>{const o={id:uid(),name:n,kind,wall:'N',pos:1,len:kind==='french'?5:3};state.openings.push(o);sel={kind:'op',id:o.id}});$('#opChips').appendChild(b)}
+
+function refreshSaved(){const s=lsGet(SAVED)||{},names=Object.keys(s);$('#lList').innerHTML=names.length?names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join(''):'<option value="">No saved layouts yet</option>';$('#bLoad').disabled=$('#bDelL').disabled=!names.length}
+$('#bSave').onclick=()=>{const s=lsGet(SAVED)||{};const name=$('#lName').value.trim()||`Layout ${Object.keys(s).length+1}`;s[name]=state;if(lsSet(SAVED,s)){$('#lName').value='';refreshSaved();$('#lList').value=name;$('#status').textContent=`Saved “${name}” in this browser.`}else $('#status').textContent='This browser blocked saving. Try a different browser or turn off private mode.'};
+$('#bLoad').onclick=()=>{const s=lsGet(SAVED)||{},n=$('#lList').value;if(s[n]&&valid(s[n]))change(()=>{state=JSON.parse(JSON.stringify(s[n]));sel=null})};
+$('#bDelL').onclick=()=>{const s=lsGet(SAVED)||{},n=$('#lList').value;if(n in s){delete s[n];lsSet(SAVED,s);refreshSaved();$('#status').textContent=`Deleted “${n}”.`}};
+$('#bReset').onclick=()=>change(()=>{state=defaults();sel=null});
+$('#bUndo').onclick=doUndo;
+$('#tGaps').onchange=e=>{showGaps=e.target.checked;render()};
+$('#tSnap').onchange=e=>{snapOn=e.target.checked};
+
+function showCompare(){
+ const s=lsGet(SAVED)||{},names=Object.keys(s).filter(n=>valid(s[n])),g=$('#cmpGrid');
+ g.innerHTML=names.length?names.map(n=>{const r=svgFor(s[n]);return `<figure class="cmp-card"><h3>${esc(n)}</h3><svg viewBox="-4 -1.6 23 38.4" role="img" aria-label="${esc(n)} layout">${r.out}</svg><figcaption class="muted">${r.bad?r.bad+' piece'+(r.bad>1?'s':'')+' in conflict, outlined in red':'No overlaps'}</figcaption></figure>`}).join(''):'<p class="muted">No saved layouts yet. Name and save a layout first, then compare it here.</p>';
+ const c=$('#compare');c.hidden=false;c.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('#bExp').onclick=()=>{
+ const saved=Object.assign({},lsGet(SAVED)||{},{'Working plan':state});
+ const txt='STUDIO1:'+btoa(unescape(encodeURIComponent(JSON.stringify({v:1,saved}))));
+ const box=$('#xfer');box.value=txt;box.select();
+ const manual=()=>{$('#status').textContent='Your layouts are in the box above. Select all of it and copy.'};
+ try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>{$('#status').textContent='Copied your layouts. Paste them into an email or message.'},manual);else manual()}catch(e){manual()}
+};
+$('#bImp').onclick=()=>{
+ let t=$('#xfer').value.trim();if(t.startsWith('STUDIO1:'))t=t.slice(8);
+ let d;try{d=JSON.parse(decodeURIComponent(escape(atob(t))))}catch(e){$('#status').textContent="That text isn't a layout export. Paste the whole block, starting with STUDIO1:";return}
+ const inc=d&&d.saved;if(!inc||typeof inc!=='object'){$('#status').textContent='No layouts found in that text.';return}
+ const s=lsGet(SAVED)||{};let n=0;
+ for(const k in inc){if(!valid(inc[k]))continue;migrate(inc[k]);let name=k;if(s[name]){name=k+' (imported)';let i=2;while(s[name])name=`${k} (imported ${i++})`}s[name]=inc[k];n++}
+ if(!lsSet(SAVED,s)){$('#status').textContent='This browser blocked saving. Try a different browser or turn off private mode.';return}
+ refreshSaved();$('#xfer').value='';
+ $('#status').textContent=n?`Imported ${n} layout${n>1?'s':''}. Pick one under Saved layouts, or compare them side by side.`:'No layouts found in that text.';
+};
+$('#bCmp').onclick=showCompare;
+$('#bCloseCmp').onclick=()=>{$('#compare').hidden=true};
+refreshSaved();render();renderPanel();
+</script>
+</body>
+</html>
